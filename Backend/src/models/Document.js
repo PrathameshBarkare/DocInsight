@@ -14,6 +14,15 @@ const DocumentSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    content: {
+      type: String,
+      default: "",
+    },
+    status: {
+      type: String,
+      enum: ["processing", "ready", "failed"],
+      default: "processing",
+    },
   },
   { timestamps: true }
 );
