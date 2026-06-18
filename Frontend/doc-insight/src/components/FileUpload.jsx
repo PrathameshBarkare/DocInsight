@@ -1,66 +1,143 @@
 import { useState } from "react";
+import { useDropzone } from "react-dropzone";
+import AddIcon from "@mui/icons-material/Add";
+import DescriptionIcon from "@mui/icons-material/Description";
+import PdfIcon from "@mui/icons-material/PictureAsPdf";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Loader from "./Loader";
 import api from "../services/api";
 
 function FileUpload() {
-  const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
-  const handleUpload = async () => {
-    if (!file) {
-      alert("Please select a PDF file");
-      return;
-    }
+  const handleUpload = async (selectedFile) => {
+    if (!selectedFile) return;
+
+    const fileId = Date.now();
+
+    const fileObject = {
+      id: fileId,
+      file: selectedFile,
+      isLoading: true,
+    };
+
+    setUploadedFiles((prev) => [...prev, fileObject]);
 
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", selectedFile);
 
     try {
-      setLoading(true);
-
-      const response = await api.post(
-        "/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await api.post("/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       console.log(response.data);
 
-      alert("File uploaded successfully!");
-    }
-    catch (error) {
+      setUploadedFiles((prev) =>
+        prev.map((item) =>
+          item.id === fileId ? { ...item, isLoading: false } : item,
+        ),
+      );
+    } catch (error) {
       alert("Upload failed");
-    }
-    finally {
-      setLoading(false);
+
+      setUploadedFiles((prev) => prev.filter((item) => item.id !== fileId));
     }
   };
 
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: {
+      "application/pdf": [".pdf"],
+    },
+    noClick: true,
+    onDrop: (acceptedFiles) => {
+      if (acceptedFiles[0]) {
+        handleUpload(acceptedFiles[0]);
+      }
+    },
+  });
+
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-md">
-      <h2 className="text-xl font-semibold mb-4">
-        Upload PDF
-      </h2>
+    <div
+      {...getRootProps()}
+      className={`relative shadow-md w-full h-full text-white border transition-colors ${
+        isDragActive ? "border-gray-400 bg-[#1a1a1a]" : "border-gray-700"
+      }`}
+    >
+      <input {...getInputProps()} />
+
+      <div className="px-6 pt-4 text-lg font-normal mb-4">Sources</div>
+
+      <hr className="w-full border-gray-700 mb-5" />
 
       <input
+        id="file-upload"
         type="file"
         accept="application/pdf"
-        onChange={(e) => setFile(e.target.files[0])}
-        className="mb-4"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+
+          if (file) {
+            handleUpload(file);
+            e.target.value = "";
+          }
+        }}
       />
 
-      <button
-        onClick={handleUpload}
-        disabled={loading}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-      >
-        {loading ? "Uploading..." : "Upload"}
-      </button>
+      <div className="px-6 flex items-center gap-3">
+        <label
+          htmlFor="file-upload"
+          className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-full border border-gray-600 bg-[#212121] text-white text-sm font-medium cursor-pointer hover:bg-[#333333] transition-colors"
+        >
+          <AddIcon fontSize="small" />
+          Add sources
+        </label>
+      </div>
+
+      {uploadedFiles.length > 0 && (
+        <div className="mt-10">
+          {uploadedFiles.map((item) => (
+            <div
+              key={item.id}
+              className="p-2 flex items-center gap-3 mx-6 rounded-lg hover:bg-[#333333] transition-colors"
+            >
+              <PdfIcon sx={{ fontSize: 28 }} />
+
+              <span className="ml-2 text-white text-base font-medium truncate min-w-0" title={item.file.name}>
+                {item.file.name}
+              </span>
+
+              <button
+                onClick={() => {
+                  setUploadedFiles((prev) =>
+                    prev.filter((f) => f.id !== item.id),
+                  );
+                }}
+                className="ml-auto text-gray-400 hover:text-red-500 transition-colors"
+              >
+                <span className="flex items-center justify-center">
+                  {item.isLoading ? <Loader size={20} /> : <DeleteIcon sx={{ fontSize: 23 }} />}
+                </span>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {isDragActive && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 rounded pointer-events-none gap-3">
+          <DescriptionIcon sx={{ fontSize: 50 }} />
+
+          <p className="text-white text-base font-medium">
+            Drop files here to add to chat
+          </p>
+        </div>
+      )}
     </div>
   );
-};
+}
 
 export default FileUpload;

@@ -1,18 +1,19 @@
-import React, { useState } from 'react'
-import FileUpload from './FileUpload';
+import React, { useState } from "react";
+import FileUpload from "./FileUpload";
+import ChatSection from "./ChatSection";
 
 function MainLayout() {
-  
   return (
-    <div className='flex w-full h-full'>
-      <div className='px-36 pt-6 h-full border border-gray-300 text-2xl font-bold'>
-        DocInsight
-      </div>
-      <div>
+    <div className="flex h-screen bg-black">
+      <div className="w-[400px]">
         <FileUpload />
       </div>
+      
+      <div className="flex-1">
+        <ChatSection />
+      </div>
     </div>
-  )
+  );
 }
 
 export default MainLayout;
