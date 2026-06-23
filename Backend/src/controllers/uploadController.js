@@ -1,5 +1,7 @@
 import axios from "axios";
 import Document from "../models/Document.js";
+import Chunk from "../models/chunks.js";
+import { createChunks } from "../services/chunkService.js";
 
 const uploadPDF = async (req, res) => {
   try{
@@ -24,8 +26,24 @@ const uploadPDF = async (req, res) => {
       );
       newDocument.content = doclingResponse.data.markdown;
       newDocument.status = "ready";
-      
+
       await newDocument.save();
+
+      try{
+        const chunks = await createChunks(newDocument.content);
+
+        const chunkDocuments = chunks.map((chunk, index) => ({
+          documentId: newDocument._id,
+          chunkIndex: index,
+          content: chunk,
+        }));
+
+        await Chunk.insertMany(chunkDocuments);
+      }
+      catch(chunkError){
+        console.error("Chunk Error:", chunkError);
+      }
+
     }
     catch(doclingError){
       console.error("Docling Error:", doclingError);

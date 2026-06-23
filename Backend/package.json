@@ -10,9 +10,11 @@
   "author": "Prathamesh Barkare",
   "license": "ISC",
   "dependencies": {
+    "@langchain/textsplitters": "^1.0.1",
     "axios": "^1.17.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "langchain": "^1.5.0",
     "mongoose": "^9.6.2",
     "multer": "^2.1.1"
   }
