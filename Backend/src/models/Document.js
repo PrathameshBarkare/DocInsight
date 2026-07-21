@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const DocumentSchema = new mongoose.Schema(
   {
+    originalFileName: {
+      type: String,
+      required: true,
+    },
     fileName: {
       type: String,
       required: true,

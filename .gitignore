@@ -10,12 +10,12 @@ frontend/.env
 backend/uploads/
 
 # Python
-docling-service/venv/
+rag-service/venv/
 **/__pycache__/
 *.pyc
 
 # Test PDFs (optional)
-docling-service/*.pdf
+rag-service/*.pdf
 
 # Logs
 logs/

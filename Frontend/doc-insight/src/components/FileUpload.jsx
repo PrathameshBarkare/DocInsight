@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import AddIcon from "@mui/icons-material/Add";
 import DescriptionIcon from "@mui/icons-material/Description";
@@ -10,15 +10,27 @@ import api from "../services/api";
 function FileUpload() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
 
+  const getUploadedFiles = async () => {
+    try {
+      const response = await api.get("/files");
+      setUploadedFiles(response.data);
+    } catch (error) {
+      console.error("Error fetching uploaded files:", error);
+    }
+  };
+
+  useEffect(() => {
+    getUploadedFiles();
+  }, []);
+
   const handleUpload = async (selectedFile) => {
     if (!selectedFile) return;
 
     const fileId = Date.now();
-
     const fileObject = {
-      id: fileId,
-      file: selectedFile,
-      isLoading: true,
+      _id: fileId,
+      originalFileName: selectedFile.name,
+      status: "uploading",
     };
 
     setUploadedFiles((prev) => [...prev, fileObject]);
@@ -33,17 +45,49 @@ function FileUpload() {
         },
       });
 
-      console.log(response.data);
+      console.log(response);
+      const document = response.data.document;
 
       setUploadedFiles((prev) =>
         prev.map((item) =>
-          item.id === fileId ? { ...item, isLoading: false } : item,
+          item._id === fileId
+            ? {
+                ...item,
+                _id: document._id,
+                originalFileName: document.originalFileName,
+                status: document.status,
+              }
+            : item,
         ),
       );
     } catch (error) {
       alert("Upload failed");
 
-      setUploadedFiles((prev) => prev.filter((item) => item.id !== fileId));
+      setUploadedFiles((prev) => prev.filter((item) => item._id !== fileId));
+    }
+  };
+
+  useEffect(() => {
+    const hasProcessingFiles = uploadedFiles.some(
+      (file) => file.status !== "ready" && file.status !== "failed",
+    );
+
+    if (!hasProcessingFiles) return;
+
+    const interval = setInterval(() => {
+      getUploadedFiles();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [uploadedFiles]);
+
+  const deleteFile = async (_id) => {
+    try {
+      await api.delete(`/delete/${_id}`);
+      await getUploadedFiles();
+    } catch (error) {
+      console.error("Delete failed:", error);
+      alert("Delete failed");
     }
   };
 
@@ -90,7 +134,9 @@ function FileUpload() {
       <div className="px-6 flex items-center gap-3">
         <label
           htmlFor="file-upload"
-          className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-full border border-gray-600 bg-[#212121] text-white text-sm font-medium cursor-pointer hover:bg-[#333333] transition-colors"
+          className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-full border border-gray-600 bg-[#212121] text-white text-sm font-medium
+          cursor-pointer
+          hover:bg-[#333333] transition-colors"
         >
           <AddIcon fontSize="small" />
           Add sources
@@ -101,25 +147,29 @@ function FileUpload() {
         <div className="mt-10">
           {uploadedFiles.map((item) => (
             <div
-              key={item.id}
+              key={item._id}
               className="p-2 flex items-center gap-3 mx-6 rounded-lg hover:bg-[#333333] transition-colors"
             >
               <PdfIcon sx={{ fontSize: 28 }} />
 
-              <span className="ml-2 text-white text-base font-medium truncate min-w-0" title={item.file.name}>
-                {item.file.name}
+              <span
+                className="ml-2 text-white text-base font-medium truncate min-w-0"
+                title={item.originalFileName}
+              >
+                {item.originalFileName}
               </span>
 
               <button
-                onClick={() => {
-                  setUploadedFiles((prev) =>
-                    prev.filter((f) => f.id !== item.id),
-                  );
-                }}
+                onClick={() => deleteFile(item._id)}
+                disabled={item.status !== "ready" && item.status !== "failed"}
                 className="ml-auto text-gray-400 hover:text-red-500 transition-colors"
               >
                 <span className="flex items-center justify-center">
-                  {item.isLoading ? <Loader size={20} /> : <DeleteIcon sx={{ fontSize: 23 }} />}
+                  {item.status !== "ready" && item.status !== "failed" ? (
+                    <Loader size={20} />
+                  ) : (
+                    <DeleteIcon sx={{ fontSize: 23 }} />
+                  )}
                 </span>
               </button>
             </div>

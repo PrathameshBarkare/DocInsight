@@ -15,6 +15,10 @@ const ChunkSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    embedding: {
+      type: [Number],
+      required: true,
+    }
   },
   { timestamps: true },
 );

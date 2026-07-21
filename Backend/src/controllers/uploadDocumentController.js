@@ -12,10 +12,20 @@ const uploadPDF = async (req, res) => {
     }
 
     const newDocument = await Document.create({
+      originalFileName: req.file.originalname,
       fileName: req.file.filename,
       filePath: req.file.path.replace(/\\/g, "/"),
       fileSize: req.file.size,
     });
+
+    console.log("processing document")
+
+    res.status(201).json({
+      message: "Processing document",
+      document: newDocument
+    });
+
+    console.log("chunking document");
 
     try{
       const doclingResponse = await axios.post(
@@ -25,36 +35,43 @@ const uploadPDF = async (req, res) => {
         }
       );
       newDocument.content = doclingResponse.data.markdown;
-      newDocument.status = "ready";
-
-      await newDocument.save();
 
       try{
         const chunks = await createChunks(newDocument.content);
+
+        const embeddingResponse = await axios.post(
+          "http://127.0.0.1:8000/embeddings",
+          {
+            chunks,
+          }
+        );
+
+        const embeddings = embeddingResponse.data.embeddings;
 
         const chunkDocuments = chunks.map((chunk, index) => ({
           documentId: newDocument._id,
           chunkIndex: index,
           content: chunk,
+          embedding: embeddings[index],
         }));
 
         await Chunk.insertMany(chunkDocuments);
+
+        newDocument.status = "ready";
+        await newDocument.save();
       }
       catch(chunkError){
         console.error("Chunk Error:", chunkError);
-      }
 
+        newDocument.status = "failed";
+        await newDocument.save();
+      }
     }
     catch(doclingError){
       console.error("Docling Error:", doclingError);
       newDocument.status = "failed";
       await newDocument.save();
     }
-
-    res.status(201).json({
-      message: "Document uploaded successfully",
-      document: newDocument 
-    });
   }
   catch(error){
     console.error("Error uploading document:", error);
