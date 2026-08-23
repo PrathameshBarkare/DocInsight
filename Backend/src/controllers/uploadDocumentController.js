@@ -18,14 +18,10 @@ const uploadPDF = async (req, res) => {
       fileSize: req.file.size,
     });
 
-    console.log("processing document")
-
     res.status(201).json({
       message: "Processing document",
       document: newDocument
     });
-
-    console.log("chunking document");
 
     try{
       const doclingResponse = await axios.post(
@@ -42,7 +38,7 @@ const uploadPDF = async (req, res) => {
         const embeddingResponse = await axios.post(
           "http://127.0.0.1:8000/embeddings",
           {
-            chunks,
+            texts: chunks,
           }
         );
 

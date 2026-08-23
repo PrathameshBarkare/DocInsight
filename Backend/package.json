@@ -10,6 +10,7 @@
   "author": "Prathamesh Barkare",
   "license": "ISC",
   "dependencies": {
+    "@google/genai": "^2.13.0",
     "@langchain/textsplitters": "^1.0.1",
     "axios": "^1.17.0",
     "cors": "^2.8.6",

@@ -10,7 +10,7 @@ class ParseRequest(BaseModel):
     file_path: str
     
 class EmbeddingRequest(BaseModel):
-    chunks: list[str]
+    texts: list[str]
 
 @app.post("/parse")
 def parse_document(request: ParseRequest):
@@ -31,9 +31,9 @@ def parse_document(request: ParseRequest):
         )
 
 @app.post("/embeddings")
-def generate_document_embeddings(request: EmbeddingRequest):
+def generate_embeddings_api(request: EmbeddingRequest):
     try:
-        embeddings = generate_embeddings(request.chunks)
+        embeddings = generate_embeddings(request.texts)
         return {
             "success": True,
             "embeddings": embeddings

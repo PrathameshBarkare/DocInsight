@@ -7,7 +7,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import Loader from "./Loader";
 import api from "../services/api";
 
-function FileUpload() {
+function FileUpload({selectedDocumentId, setSelectedDocumentId}) {
   const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const getUploadedFiles = async () => {
@@ -123,7 +123,6 @@ function FileUpload() {
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
-
           if (file) {
             handleUpload(file);
             e.target.value = "";
@@ -150,6 +149,16 @@ function FileUpload() {
               key={item._id}
               className="p-2 flex items-center gap-3 mx-6 rounded-lg hover:bg-[#333333] transition-colors"
             >
+              <input
+                type="checkbox"
+                className="h-4 w-4 mr-2 cursor-pointer"
+                checked={selectedDocumentId === item._id}
+                onChange={(e) => {
+                  const documentId = e.target.checked ? item._id : "";
+                  setSelectedDocumentId(documentId);
+                }}
+              />
+
               <PdfIcon sx={{ fontSize: 28 }} />
 
               <span
