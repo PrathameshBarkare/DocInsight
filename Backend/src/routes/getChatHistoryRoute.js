@@ -1,8 +1,8 @@
 import express from "express";
-import {getUploadedDocuments} from "../controllers/getUploadedDocumentsController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
+import {getChatHistory} from "../controllers/getChatHistoryController.js";
 
 const router = express.Router();
-router.get("/files", authMiddleware, getUploadedDocuments);
+router.get("/:documentId", authMiddleware, getChatHistory);
 
 export default router;

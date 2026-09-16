@@ -2,7 +2,7 @@ import Document from "../models/Document.js";
 
 const getUploadedDocuments = async (req, res) => {
   try {
-    const documents = await Document.find()
+    const documents = await Document.find({userId: req.user.id,})
       .select("originalFileName fileName fileSize status createdAt")
       .sort({ createdAt: 1 });
 

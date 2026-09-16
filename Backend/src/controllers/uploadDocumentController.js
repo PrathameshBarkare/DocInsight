@@ -12,6 +12,7 @@ const uploadPDF = async (req, res) => {
     }
 
     const newDocument = await Document.create({
+      userId: req.user.id,
       originalFileName: req.file.originalname,
       fileName: req.file.filename,
       filePath: req.file.path.replace(/\\/g, "/"),

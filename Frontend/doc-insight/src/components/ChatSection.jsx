@@ -25,6 +25,26 @@ function ChatSection({ selectedDocumentId }) {
     scrollToBottom();
   }, [messages, isLoading]);
 
+  useEffect(() => {
+    const getChatHistory = async () => {
+      if (!selectedDocumentId) {
+        setMessages([]);
+        return;
+      }
+      setMessages([]);
+
+      try {
+        const response = await api.get(`/chat-history/${selectedDocumentId}`);
+
+        setMessages(response.data.messages);
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
+      }
+    };
+
+    getChatHistory();
+  }, [selectedDocumentId]);
+
   const handleSubmit = async () => {
     const question = chatBox.trim();
 
@@ -85,10 +105,22 @@ function ChatSection({ selectedDocumentId }) {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
+
   return (
     <div className="h-full text-white flex flex-col">
-      <div className="px-10 pt-6">
+      <div className="px-10 pt-6 flex items-start justify-between">
         <div className="text-2xl font-bold">DocInsight</div>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 text-sm text-gray-300 border border-gray-700 rounded-lg hover:bg-[#212121] hover:text-white transition-colors"
+        >
+          Logout
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -122,7 +154,7 @@ function ChatSection({ selectedDocumentId }) {
             <div className="max-w-4xl mx-auto w-full space-y-6">
               {messages.map((message, index) => (
                 <div
-                  key={index}
+                  key={message._id || index}
                   className={`flex ${
                     message.role === "user" ? "justify-end" : "justify-start"
                   }`}
