@@ -14,11 +14,14 @@ class EmbeddingRequest(BaseModel):
 
 @app.post("/parse")
 async def parse_document(file: UploadFile = File(...)):
-    from services.parser import parse_pdf
-    temp_file_path = None
+    print("STEP 1: Request received:", file.filename)
 
     try:
-        print("Request received:", file.filename)
+        print("STEP 2: Importing parser...")
+        from services.parser import parse_pdf
+        print("STEP 3: Parser imported")
+
+        temp_file_path = None
 
         file_extension = os.path.splitext(file.filename)[1]
 
@@ -26,11 +29,14 @@ async def parse_document(file: UploadFile = File(...)):
             delete=False,
             suffix=file_extension
         ) as temp_file:
-
             temp_file.write(await file.read())
             temp_file_path = temp_file.name
 
+        print("STEP 4: Temporary file created:", temp_file_path)
+
         markdown = parse_pdf(temp_file_path)
+
+        print("STEP 5: PDF parsed successfully")
 
         return {
             "success": True,
@@ -39,16 +45,11 @@ async def parse_document(file: UploadFile = File(...)):
 
     except Exception as e:
         print("Docling Error:", str(e))
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500, detail=str(e))
 
     finally:
         if temp_file_path and os.path.exists(temp_file_path):
             os.remove(temp_file_path)
-
 
 @app.post("/embeddings")
 def generate_embeddings_api(request: EmbeddingRequest):
