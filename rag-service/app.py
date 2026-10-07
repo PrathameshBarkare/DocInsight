@@ -22,6 +22,18 @@ async def test_upload(file: UploadFile = File(...)):
         "size": len(contents)
     }
 
+@app.get("/test-docling")
+def test_docling():
+    print("STEP 1: Starting Docling import")
+
+    from services.parser import parse_pdf
+
+    print("STEP 2: Docling imported successfully")
+
+    return {
+        "message": "Docling initialized successfully"
+    }
+
 class EmbeddingRequest(BaseModel):
     texts: list[str]
 
