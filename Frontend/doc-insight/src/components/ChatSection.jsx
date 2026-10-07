@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import api from "../services/api";
 
-function ChatSection({ selectedDocumentId }) {
+function ChatSection({ selectedDocumentId, onLogout }) {
   const [chatBox, setChatBox] = useState("");
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -106,9 +106,7 @@ function ChatSection({ selectedDocumentId }) {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/login";
+    onLogout();
   };
 
   return (

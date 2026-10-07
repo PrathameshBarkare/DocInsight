@@ -7,7 +7,10 @@ const deleteDocument = async (req, res) => {
     const documentId = req.params.id;
 
     // Find the document
-    const document = await Document.findById(documentId);
+    const document = await Document.findOne({
+      _id: documentId,
+      userId: req.user.id,
+    });
 
     if (!document) {
       return res.status(404).json({
@@ -28,7 +31,10 @@ const deleteDocument = async (req, res) => {
     });
 
     // Delete document from MongoDB
-    await Document.findByIdAndDelete(documentId);
+    await Document.deleteOne({
+      _id: documentId,
+      userId: req.user.id,
+    });
 
     res.status(200).json({
       message: "Document deleted successfully",

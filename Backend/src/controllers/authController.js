@@ -2,6 +2,32 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/Users.js";
 
+const getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("name email");
+
+    if (!user) {
+      return res.status(401).json({
+        message: "User account no longer exists",
+      });
+    }
+
+    res.status(200).json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error("Current user lookup error:", error);
+
+    res.status(500).json({
+      message: "Failed to verify session",
+    });
+  }
+};
+
 const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -102,4 +128,4 @@ const login = async (req, res) => {
   }
 };
 
-export { register, login  };
+export { register, login, getCurrentUser };
