@@ -1,5 +1,5 @@
 import express from "express";
-import { deleteDocument } from "../controllers/deletedocumentController.js";
+import { deleteDocument } from "../controllers/deleteDocumentController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
