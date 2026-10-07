@@ -3,17 +3,14 @@ from pydantic import BaseModel
 import tempfile
 import os
 
-from services.parser import parse_pdf
-from services.embeddings import generate_embeddings
-
 app = FastAPI()
 
 class EmbeddingRequest(BaseModel):
     texts: list[str]
 
-
 @app.post("/parse")
 async def parse_document(file: UploadFile = File(...)):
+    from services.parser import parse_pdf
     temp_file_path = None
 
     try:
@@ -51,6 +48,7 @@ async def parse_document(file: UploadFile = File(...)):
 
 @app.post("/embeddings")
 def generate_embeddings_api(request: EmbeddingRequest):
+    from services.embeddings import generate_embeddings
     try:
         embeddings = generate_embeddings(request.texts)
 
