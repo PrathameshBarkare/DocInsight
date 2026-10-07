@@ -5,6 +5,10 @@ import os
 
 app = FastAPI()
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 class EmbeddingRequest(BaseModel):
     texts: list[str]
 
