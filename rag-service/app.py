@@ -9,6 +9,19 @@ app = FastAPI()
 def health():
     return {"status": "ok"}
 
+@app.post("/test-upload")
+async def test_upload(file: UploadFile = File(...)):
+    print("TEST UPLOAD RECEIVED:", file.filename)
+
+    contents = await file.read()
+
+    print("FILE SIZE:", len(contents))
+
+    return {
+        "filename": file.filename,
+        "size": len(contents)
+    }
+
 class EmbeddingRequest(BaseModel):
     texts: list[str]
 
